@@ -2,7 +2,8 @@ import mqtt
 import uuid
 import system.storage
 import device
-import system.firmware
+import system
+import system.containers
 import encoding.json
 
 HOST ::= "192.168.137.41"                   // Broker ip address
@@ -11,8 +12,13 @@ USERNAME ::= "admin"                        // Broker auth username
 PASSWORD ::= "password"                     // Broker auth password
 
 main:
-  
-  // Initiate client for mqtt connection
+
+  print device.hardware-id
+  print system.app-sdk-version
+  print system.architecture
+  print system.platform
+
+  /* // Initiate client for mqtt connection
   client := mqtt.Client --host=HOST --port=PORT
 
   // mqtt session settings for client acknowledge and authentication
@@ -26,15 +32,16 @@ main:
 
   print "[Athena] INFO: Connected to MQTT broker"
 
-  task:: lifecycle client
+  task:: lifecycle client */
 
 init client/mqtt.Client:
   print "[Athena] INFO: Initializing device"
 
   // Create new device payload
   new_device := json.encode {
+    "name": "$device.name",
     "device_id": "$device.hardware-id",
-    "firmware_version": "$firmware.uri"
+    "firmware_version": "$system.app-sdk-version"
   }
 
   // Publish the payload to the broker with specified topic
@@ -49,7 +56,7 @@ lifecycle client/mqtt.Client:
     status := json.encode {
       "value": "ESP with Toit firmware running Athena container",
       "device-id": "$device.hardware-id",
-      "firmware": "$firmware.uri",
+      "firmware": "$system.app-sdk-version",
       "now": "$Time.now.ms-since-epoch"
     }
 
