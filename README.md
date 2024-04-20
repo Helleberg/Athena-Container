@@ -9,6 +9,12 @@ Athena container are the devices code that runs on an esp32 with Toit firmware. 
 
 ## Usage
 
+Install required toit packages:
+```jag
+jag pkg install
+```
+
+
 Define the host connection, all of the values should be change according to your MQTT broker setup:
 ```toit
 // "HOST" is the ip address of the MQTT broker.

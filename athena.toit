@@ -45,6 +45,8 @@ init client/mqtt.Client:
 lifecycle client/mqtt.Client:
   init client
 
+  print "[Athena] INFO: Start lifecycle"
+
   // Lifecycle loop
   while true:
     // Create status lifecycle payload
