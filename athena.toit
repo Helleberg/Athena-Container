@@ -13,12 +13,7 @@ PASSWORD ::= "password"                     // Broker auth password
 
 main:
 
-  print device.hardware-id
-  print system.app-sdk-version
-  print system.architecture
-  print system.platform
-
-  /* // Initiate client for mqtt connection
+  // Initiate client for mqtt connection
   client := mqtt.Client --host=HOST --port=PORT
 
   // mqtt session settings for client acknowledge and authentication
@@ -32,7 +27,7 @@ main:
 
   print "[Athena] INFO: Connected to MQTT broker"
 
-  task:: lifecycle client */
+  task:: lifecycle client
 
 init client/mqtt.Client:
   print "[Athena] INFO: Initializing device"
@@ -40,7 +35,7 @@ init client/mqtt.Client:
   // Create new device payload
   new_device := json.encode {
     "uuid": "$device.hardware-id",
-    "toit_firmware_version": "$firmware.uri",
+    "toit_firmware_version": "$system.app-sdk-version",
     "athena_version": "v1.0.0"
   }
 
@@ -56,7 +51,7 @@ lifecycle client/mqtt.Client:
     status := json.encode {
       "value": "ESP with Toit firmware running Athena container",
       "uuid": "$device.hardware-id",
-      "toit_firmware_version": "$firmware.uri",
+      "toit_firmware_version": "$system.app-sdk-version",
       "athena_version": "v1.0.0",
       "now": "$Time.now.ms-since-epoch"
     }
