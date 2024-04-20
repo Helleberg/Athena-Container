@@ -6,7 +6,7 @@ import system
 import system.containers
 import encoding.json
 
-HOST ::= "192.168.137.41"                   // Broker ip address
+HOST ::= "192.168.1.228"                   // Broker ip address
 PORT ::= 1883                               // Broker port
 USERNAME ::= "admin"                        // Broker auth username
 PASSWORD ::= "password"                     // Broker auth password
@@ -39,13 +39,13 @@ init client/mqtt.Client:
 
   // Create new device payload
   new_device := json.encode {
-    "name": "$device.name",
-    "device_id": "$device.hardware-id",
-    "firmware_version": "$system.app-sdk-version"
+    "uuid": "$device.hardware-id",
+    "toit_firmware_version": "$firmware.uri",
+    "athena_version": "v1.0.0"
   }
 
   // Publish the payload to the broker with specified topic
-  client.publish "device/new" new_device --qos=1 --retain=true
+  client.publish "devices/new" new_device --qos=1 --retain=true
 
 lifecycle client/mqtt.Client:
   init client
@@ -55,8 +55,9 @@ lifecycle client/mqtt.Client:
     // Create status lifecycle payload
     status := json.encode {
       "value": "ESP with Toit firmware running Athena container",
-      "device-id": "$device.hardware-id",
-      "firmware": "$system.app-sdk-version",
+      "uuid": "$device.hardware-id",
+      "toit_firmware_version": "$firmware.uri",
+      "athena_version": "v1.0.0",
       "now": "$Time.now.ms-since-epoch"
     }
 
