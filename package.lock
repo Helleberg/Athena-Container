@@ -1,9 +1,9 @@
-sdk: ^2.0.0-alpha.35
+sdk: ^2.0.0-alpha.100
 prefixes:
   mqtt: mqtt
 packages:
   mqtt:
     url: github.com/toitware/mqtt
     name: mqtt
-    version: 2.6.0
-    hash: 8e09fb35c393e442305ee4578e5546c5c80735be
+    version: 2.7.0
+    hash: ae42b7f4949ec65512e845e7bef7e90a33a914d9
