@@ -45,7 +45,7 @@ init client/mqtt.Client:
 lifecycle client/mqtt.Client:
   init client
 
-  print "[Athena] INFO: Start lifecycle"
+  print "[Athena] INFO: Start lifecycle - Sending ping every 30 seconds"
 
   // Lifecycle loop
   while true:
@@ -60,5 +60,5 @@ lifecycle client/mqtt.Client:
 
     // Publish the payload to the broker with specified topic
     client.publish "lifecycle/status" status
-    sleep --ms=1000
+    sleep --ms=30000
   
