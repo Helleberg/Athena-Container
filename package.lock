@@ -1,5 +1,6 @@
 sdk: ^2.0.0-alpha.100
 prefixes:
+  http: pkg-http
   mqtt: mqtt
 packages:
   mqtt:
@@ -7,3 +8,8 @@ packages:
     name: mqtt
     version: 2.7.0
     hash: ae42b7f4949ec65512e845e7bef7e90a33a914d9
+  pkg-http:
+    url: github.com/toitlang/pkg-http
+    name: http
+    version: 2.6.0
+    hash: 97bdea9f0f0c78bd41d85d8ac071527caa76b09d
