@@ -10,11 +10,13 @@ import system
 import system.firmware
 import encoding.json
 
-HOST ::= "192.168.1.228"                    // Broker ip address
+HOST ::= "192.168.20.248"                    // Broker ip address
 PORT ::= 1883                               // Broker port
 GATEWAY_PORT ::= 8285                       // Gateway API port
 USERNAME ::= "admin"                        // Broker auth username
 PASSWORD ::= "password"                     // Broker auth password
+
+ATHENA_VERSION ::= "v1.0.0"                 // VERSION of current file
 
 main:
   routes := {
@@ -39,6 +41,23 @@ main:
 
   print "[Athena] INFO: Connected to MQTT broker"
 
+  // Check if firmware validation is pending
+  if firmware.is-validation-pending:
+    if firmware.validate:
+      print "[Athena] INFO: Firmware update validated"
+      // Publish firmware update success
+      updated := json.encode {
+        "message": "Firmware updated successfully",
+        "uuid": "$device.hardware-id",
+        "toit_firmware_version": "$system.app-sdk-version",
+        "athena_version": "$ATHENA_VERSION"
+      }
+
+      // Publish the payload to the broker with specified topic
+      client.publish "firmware/updated/$device.hardware-id.to-string" updated --qos=0
+    else:
+      print "[Athena] INFO: Firmware update failed to validate"
+
   task:: lifecycle client
 
 init client/mqtt.Client:
@@ -48,7 +67,7 @@ init client/mqtt.Client:
   new_device := json.encode {
     "uuid": "$device.hardware-id",
     "toit_firmware_version": "$system.app-sdk-version",
-    "athena_version": "v1.0.0"
+    "athena_version": "$ATHENA_VERSION"
   }
 
   // Publish the payload to the broker with specified topic
@@ -65,7 +84,7 @@ lifecycle client/mqtt.Client:
     status := json.encode {
       "uuid": "$device.hardware-id",
       "toit_firmware_version": "$system.app-sdk-version",
-      "athena_version": "v1.0.0"
+      "athena_version": "$ATHENA_VERSION"
     }
 
     // Publish the payload to the broker with specified topic
