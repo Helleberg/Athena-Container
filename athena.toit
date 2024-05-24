@@ -9,13 +9,13 @@ import system
 import system.firmware
 import encoding.json
 
-HOST ::= "192.168.0.104"                    // Broker ip address
+HOST ::= "192.168.1.228"                    // Broker ip address
 PORT ::= 1883                               // Broker port
 GATEWAY_PORT ::= 8285                       // Gateway API port
 USERNAME ::= "admin"                        // Broker auth username
 PASSWORD ::= "password"                     // Broker auth password
 
-ATHENA_VERSION ::= "v1.0.0"                 // VERSION of current file
+ATHENA_VERSION ::= "v1.0.1"                 // VERSION of current file
 
 main:
   routes := {
