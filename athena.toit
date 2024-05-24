@@ -87,7 +87,7 @@ init client/mqtt.Client:
 lifecycle client/mqtt.Client:
   init client
 
-  print "[Athena] INFO: Start lifecycle - Sending ping every 30 seconds"
+  print "[Athena] INFO: Start lifecycle  -  Sending ping every 30 seconds"
 
   // Lifecycle loop
   while true:
