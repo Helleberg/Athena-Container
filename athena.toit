@@ -77,7 +77,7 @@ init client/mqtt.Client:
     "uuid": "$device.hardware-id",
     "toit_firmware_version": "$system.app-sdk-version",
     "athena_version": "$ATHENA_VERSION",
-    "ip": "$net.open.address",
+    "ip_address": "$net.open.address",
     "jaguar_port": 9000
   }
 
@@ -96,7 +96,7 @@ lifecycle client/mqtt.Client:
       "uuid": "$device.hardware-id",
       "toit_firmware_version": "$system.app-sdk-version",
       "athena_version": "$ATHENA_VERSION",
-      "ip": "$net.open.address",
+      "ip_address": "$net.open.address",
       "jaguar_port": 9000
     }
 
