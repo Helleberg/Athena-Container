@@ -4,13 +4,12 @@ import http
 import http show Headers
 import io
 import net
-import system.storage
 import device
 import system
 import system.firmware
 import encoding.json
 
-HOST ::= "192.168.20.248"                    // Broker ip address
+HOST ::= "192.168.0.104"                    // Broker ip address
 PORT ::= 1883                               // Broker port
 GATEWAY_PORT ::= 8285                       // Gateway API port
 USERNAME ::= "admin"                        // Broker auth username
@@ -24,7 +23,7 @@ main:
       decoded := json.decode payload
       // {"uuid": uuid, "token": token}
       print "Received new information on '$topic': $decoded["token"]"
-      firmware-update "$device.hardware-id" "$decoded["token"]"
+      firmware-update "$device.hardware-id.to-string" "$decoded["token"]"
   }
 
   // Initiate client for mqtt connection
@@ -57,6 +56,16 @@ main:
       client.publish "firmware/updated/$device.hardware-id.to-string" updated --qos=0
     else:
       print "[Athena] INFO: Firmware update failed to validate"
+      // Publish firmware update error
+      updated := json.encode {
+        "message": "Firmware update failed to validate",
+        "uuid": "$device.hardware-id",
+        "toit_firmware_version": "$system.app-sdk-version",
+        "athena_version": "$ATHENA_VERSION"
+      }
+
+      // Publish the payload to the broker with specified topic
+      client.publish "firmware/updated/$device.hardware-id.to-string" updated --qos=0
 
   task:: lifecycle client
 
@@ -67,7 +76,9 @@ init client/mqtt.Client:
   new_device := json.encode {
     "uuid": "$device.hardware-id",
     "toit_firmware_version": "$system.app-sdk-version",
-    "athena_version": "$ATHENA_VERSION"
+    "athena_version": "$ATHENA_VERSION",
+    "ip": "$net.open.address",
+    "jaguar_port": 9000
   }
 
   // Publish the payload to the broker with specified topic
@@ -84,7 +95,9 @@ lifecycle client/mqtt.Client:
     status := json.encode {
       "uuid": "$device.hardware-id",
       "toit_firmware_version": "$system.app-sdk-version",
-      "athena_version": "$ATHENA_VERSION"
+      "athena_version": "$ATHENA_VERSION",
+      "ip": "$net.open.address",
+      "jaguar_port": 9000
     }
 
     // Publish the payload to the broker with specified topic
@@ -96,13 +109,17 @@ firmware-update deviceUUID/string token/string:
     network := net.open
     client := http.Client network
     try:
-      print "Requesting firmware file..."
+      print "[ATHENA] INFO: Requesting firmware file"
       header := Headers
+      print token
       header.add "Authorization" "Bearer $token"
       response := client.get --uri="http://$HOST:$GATEWAY-PORT/firmware/download/$deviceUUID" --headers=header
       if response.status-code == 200:
         print "Got firmware file"
         install-firmware response.body
+      else:
+        print "Request Error:"
+        print response.body
     finally:
       client.close
       network.close
