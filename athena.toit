@@ -87,12 +87,11 @@ firmware-update deviceUUID/string token/string:
       if response.status-code == 200:
         print "Got firmware file"
         install-firmware response.body
-      else:
-        print "Request Error:"
-        print response.body
     finally:
       client.close
       network.close
+
+    print "Firmware Reboot"
     firmware.upgrade
 
   else:
