@@ -2,7 +2,7 @@ import system.firmware
 import system
 
 main:
-  print "Firmware Update to: $system.app-sdk-version"
+  print "Firmware Updated: $system.app-sdk-version"
 
   if firmware.is-validation-pending:
     if firmware.validate:
