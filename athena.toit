@@ -4,18 +4,15 @@ import http
 import http show Headers
 import io
 import net
+import net.wifi
 import device
 import system
 import system.firmware
 import encoding.json
 
-HOST ::= "192.168.1.228"                    // Broker ip address
-PORT ::= 1883                               // Broker port
-GATEWAY_PORT ::= 8285                       // Gateway API port
-USERNAME ::= "admin"                        // Broker auth username
-PASSWORD ::= "password"                     // Broker auth password
+import .config
 
-ATHENA_VERSION ::= "v1.0.1"                 // VERSION of current file
+ATHENA_VERSION ::= "v1.0.2"   // VERSION of current file
 
 main:
   routes := {
@@ -27,45 +24,18 @@ main:
   }
 
   // Initiate client for mqtt connection
-  client := mqtt.Client --host=HOST --port=PORT --routes=routes
+  client := mqtt.Client --host=HOST --port=BROKER-PORT --routes=routes
 
   // mqtt session settings for client acknowledge and authentication
   options := mqtt.SessionOptions
       --client-id = device.hardware-id.to-string
-      --username  = USERNAME
-      --password  = PASSWORD
+      --username  = BROKER-USER
+      --password  = BROKER-PASS
 
   // Start client with session settings
   client.start --options=options
 
   print "[Athena] INFO: Connected to MQTT broker"
-
-  // Check if firmware validation is pending
-  if firmware.is-validation-pending:
-    if firmware.validate:
-      print "[Athena] INFO: Firmware update validated"
-      // Publish firmware update success
-      updated := json.encode {
-        "message": "Firmware updated successfully",
-        "uuid": "$device.hardware-id",
-        "toit_firmware_version": "$system.app-sdk-version",
-        "athena_version": "$ATHENA_VERSION"
-      }
-
-      // Publish the payload to the broker with specified topic
-      client.publish "firmware/updated/$device.hardware-id.to-string" updated --qos=0
-    else:
-      print "[Athena] INFO: Firmware update failed to validate"
-      // Publish firmware update error
-      updated := json.encode {
-        "message": "Firmware update failed to validate",
-        "uuid": "$device.hardware-id",
-        "toit_firmware_version": "$system.app-sdk-version",
-        "athena_version": "$ATHENA_VERSION"
-      }
-
-      // Publish the payload to the broker with specified topic
-      client.publish "firmware/updated/$device.hardware-id.to-string" updated --qos=0
 
   task:: lifecycle client
 
