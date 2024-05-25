@@ -9,7 +9,7 @@ import system
 import system.firmware
 import encoding.json
 
-HOST ::= "192.168.1.228"                    // Broker ip address
+HOST ::= "192.168.0.179"                    // Broker ip address
 PORT ::= 1883                               // Broker port
 GATEWAY_PORT ::= 8285                       // Gateway API port
 USERNAME ::= "admin"                        // Broker auth username
@@ -129,20 +129,36 @@ firmware-update deviceUUID/string token/string:
     print "UUID does not match"
 
 install-firmware reader/io.Reader -> none:
+  // Create HTTP websocket client
+  network := net.open
+  server-socket := network.tcp-listen 0
+  print server-socket.local-address.port
+  port := server-socket.local-address.port
+  print "Listening on http://$network.address:$port/"
+
+  clients := []
+  server := http.Server --max-tasks=5
+
   firmware-size := reader.content-size
   print "installing firmware with $firmware-size bytes"
   written-size := 0
   writer := firmware.FirmwareWriter 0 firmware-size
   try:
-    last := null
-    while data := reader.read:
-      written-size += data.size
-      writer.write data
-      percent := (written-size * 100) / firmware-size
-      if percent != last:
-        print "installing firmware with $firmware-size bytes ($percent%)"
-        last = percent
-    writer.commit
-    print "installed firmware; ready to update on chip reset"
+    server.listen server-socket:: | request/http.RequestIncoming response-writer/http.ResponseWriter |
+      web-socket := server.web-socket request response-writer
+      clients.add web-socket
+      last := null
+      while data := reader.read:
+        written-size += data.size
+        writer.write data
+        percent := (written-size * 100) / firmware-size
+        if percent != last:
+          print "installing firmware with $firmware-size bytes ($percent%)"
+          clients.do: it.send percent
+          last = percent
+        // Remvoe client after upgrade finish
+        clients.remove web-socket
+      writer.commit
+      print "installed firmware; ready to update on chip reset"
   finally:
     writer.close
