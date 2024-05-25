@@ -3,11 +3,10 @@ import system
 import net.wifi
 
 main:
-  print "Firmware Updated: $system.app-sdk-version"
+  print "[Athena] INFO: Firmware Updated: $system.app-sdk-version"
 
   if firmware.is-validation-pending:
     if firmware.validate:
-      wifi.open --ssid="Lindebjerg_43-2.4GHz" --password="wrpm7479" --save=true
-      print "firmware update validated"
+      print "[Athena] INFO: Firmware Update Validated"
     else:
-      print "firmware update failed to validate"
+      print "[Athena] INFO: Firmware Update Failed to Validate"
