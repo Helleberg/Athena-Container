@@ -7,7 +7,7 @@ main:
 
   if firmware.is-validation-pending:
     if firmware.validate:
-      wifi.open --ssid="RasmusHotspot" --password="150900re" --save=true
+      wifi.open --ssid="Lindebjerg_43-2.4GHz" --password="wrpm7479" --save=true
       print "firmware update validated"
     else:
       print "firmware update failed to validate"
