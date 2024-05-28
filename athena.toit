@@ -12,7 +12,7 @@ import encoding.json
 
 import .config
 
-ATHENA_VERSION ::= "v1.0.3"   // VERSION of current file
+ATHENA_VERSION ::= "v1.0.5"   // VERSION of current file
 
 main:
   routes := {
@@ -95,62 +95,60 @@ firmware-update deviceUUID/string token/string:
     print "[ATHENA] WARN: UUID does not match"
 
 
-install-firmware reader/io.Reader -> none:
-  firmware-size := reader.content-size
-  print "[ATHENA] INFO: Installing firmware with $firmware-size bytes"
-  written-size := 0
-  writer := firmware.FirmwareWriter 0 firmware-size
-    
-  try:
-    last := null
-    while data := reader.read:
-      written-size += data.size
-      writer.write data
-      percent := (written-size * 100) / firmware-size
-      if percent != last:
-        print "[ATHENA] INFO: Installing firmware with $firmware-size bytes ($percent%)"
-        last = percent
-
-    writer.commit
-    print "[ATHENA] INFO: Installed firmware; ready to update on chip reset"
-  finally:
-    writer.close
-    print "Writer closed"
-
-
 // install-firmware reader/io.Reader -> none:
-//   network := net.open
-//   server-socket := network.tcp-listen 1337
-//   print "[ATHENA] INFO: Listening on http://$network.address:$server-socket.local-address.port/"
-    
-//   clients := []
-//   server := http.Server --max-tasks=5
-    
 //   firmware-size := reader.content-size
 //   print "[ATHENA] INFO: Installing firmware with $firmware-size bytes"
 //   written-size := 0
 //   writer := firmware.FirmwareWriter 0 firmware-size
     
 //   try:
-//     server.listen server-socket:: | request/http.RequestIncoming response-writer/http.ResponseWriter |
-//       web-socket := server.web-socket request response-writer
-//       clients.add web-socket
-    
-//       last := null
-//       while data := reader.read:
-//         written-size += data.size
-//         writer.write data
-//         percent := (written-size * 100) / firmware-size
-//         if percent != last:
-//           print "[ATHENA] INFO: Installing firmware with $firmware-size bytes ($percent%)"
-//           clients.do: it.send "$percent"
-//           last = percent
-    
-//       // Remove client after upgrade finish
-//       web-socket.close
-//       clients.remove web-socket
+//     last := null
+//     while data := reader.read:
+//       written-size += data.size
+//       writer.write data
+//       percent := (written-size * 100) / firmware-size
+//       if percent != last:
+//         print "[ATHENA] INFO: Installing firmware with $firmware-size bytes ($percent%)"
+//         last = percent
 
-//       writer.commit
-//       print "[ATHENA] INFO: Installed firmware; ready to update on chip reset"
+//     writer.commit
+//     print "[ATHENA] INFO: Installed firmware; ready to update on chip reset"
 //   finally:
 //     writer.close
+//     print "Writer closed"
+
+
+install-firmware reader/io.Reader -> none:
+  network := net.open
+  server-socket := network.tcp-listen 1337
+  print "[ATHENA] INFO: Listening on http://$network.address:$server-socket.local-address.port/"
+    
+  clients := []
+  server := http.Server --max-tasks=5
+    
+  firmware-size := reader.content-size
+  print "[ATHENA] INFO: Installing firmware with $firmware-size bytes"
+  written-size := 0
+  writer := firmware.FirmwareWriter 0 firmware-size
+    
+  server.listen server-socket:: | request/http.RequestIncoming response-writer/http.ResponseWriter |
+    web-socket := server.web-socket request response-writer
+    clients.add web-socket
+    try:    
+        last := null
+        while data := reader.read:
+          written-size += data.size
+          writer.write data
+          percent := (written-size * 100) / firmware-size
+          if percent != last:
+            print "[ATHENA] INFO: Installing firmware with $firmware-size bytes ($percent%)"
+            clients.do: it.send "$percent"
+            last = percent
+
+        writer.commit
+        print "[ATHENA] INFO: Installed firmware; ready to update on chip reset"
+    finally:
+      writer.close
+      // Remove client after upgrade finish
+      web-socket.close
+      clients.remove web-socket
