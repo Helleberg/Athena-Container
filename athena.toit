@@ -88,35 +88,8 @@ firmware-update deviceUUID/string token/string:
       client.close
       network.close
 
-    print "[ATHENA] INFO: Firmware Reboot"
-    firmware.upgrade
-
   else:
     print "[ATHENA] WARN: UUID does not match"
-
-
-// install-firmware reader/io.Reader -> none:
-//   firmware-size := reader.content-size
-//   print "[ATHENA] INFO: Installing firmware with $firmware-size bytes"
-//   written-size := 0
-//   writer := firmware.FirmwareWriter 0 firmware-size
-    
-//   try:
-//     last := null
-//     while data := reader.read:
-//       written-size += data.size
-//       writer.write data
-//       percent := (written-size * 100) / firmware-size
-//       if percent != last:
-//         print "[ATHENA] INFO: Installing firmware with $firmware-size bytes ($percent%)"
-//         last = percent
-
-//     writer.commit
-//     print "[ATHENA] INFO: Installed firmware; ready to update on chip reset"
-//   finally:
-//     writer.close
-//     print "Writer closed"
-
 
 install-firmware reader/io.Reader -> none:
   network := net.open
@@ -146,9 +119,15 @@ install-firmware reader/io.Reader -> none:
             last = percent
 
         writer.commit
+        clients.remove web-socket
         print "[ATHENA] INFO: Installed firmware; ready to update on chip reset"
     finally:
       writer.close
-      // Remove client after upgrade finish
       web-socket.close
-      clients.remove web-socket
+
+      // Wait a bit for web-socket to close
+      sleep --ms=2500
+      print "[ATHENA] INFO: Firmware Reboot"
+      firmware.upgrade
+      
+      
