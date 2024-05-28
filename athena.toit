@@ -12,7 +12,7 @@ import encoding.json
 
 import .config
 
-ATHENA_VERSION ::= "v1.0.5"   // VERSION of current file
+ATHENA_VERSION ::= "v1.1.1"   // VERSION of current file
 
 main:
   routes := {
