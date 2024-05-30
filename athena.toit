@@ -12,7 +12,7 @@ import encoding.json
 
 import .config
 
-ATHENA_VERSION ::= "v1.1.2"   // VERSION of current file
+ATHENA_VERSION ::= "v1.1.3"   // VERSION of current file
 
 main:
   routes := {
@@ -39,6 +39,15 @@ main:
 
 init client/mqtt.Client:
   print "[Athena] INFO: Initializing device"
+  
+  print "[Athena] INFO: Firmware Version: $system.app-sdk-version"
+  
+  if firmware.is-validation-pending:
+    if firmware.validate:
+      print "[Athena] INFO: Firmware Update Validated"
+
+    else:
+      print "[Athena] INFO: Firmware Update Failed to Validate"
 
   // Create new device payload
   new_device := json.encode {
