@@ -54,6 +54,8 @@ identify-device:
     led-indicator.set 0
     sleep --ms=250
     indication-time += 1
+  
+  led-indicator.close
 
 init client/mqtt.Client:
   print "[Athena] INFO: Initializing device"
