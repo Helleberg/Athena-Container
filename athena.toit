@@ -9,6 +9,7 @@ import device
 import system
 import system.firmware
 import encoding.json
+import gpio
 
 import .config
 
@@ -19,7 +20,12 @@ main:
     // Update firmware sub
     "firmware/update/$device.hardware-id.to-string": :: | topic/string payload/ByteArray |
       decoded := json.decode payload
-      firmware-update "$device.hardware-id.to-string" "$decoded["token"]"
+      firmware-update "$device.hardware-id.to-string" "$decoded["token"]",
+    
+    "devices/$device.hardware-id.to-string/identify": :: | topic/string payload/ByteArray |
+      decoded := json.decode payload
+      print "[Athena] INFO: $decoded["uuid"]"
+      identify-device
   }
 
   // Initiate client for mqtt connection
@@ -36,6 +42,18 @@ main:
   print "[Athena] INFO: Connected to MQTT broker"
 
   task:: lifecycle client
+
+identify-device:
+  print "[Athena] INFO: Identify device"
+  led-indicator := gpio.Pin ON-BOARD-LED-PIN --output
+  indication-time := 0
+
+  while indication-time < 10:
+    led-indicator.set 1
+    sleep --ms=250
+    led-indicator.set 0
+    sleep --ms=250
+    indication-time += 1
 
 init client/mqtt.Client:
   print "[Athena] INFO: Initializing device"
@@ -112,6 +130,7 @@ install-firmware reader/io.Reader -> none:
   print "[ATHENA] INFO: Installing firmware with $firmware-size bytes"
   written-size := 0
   writer := firmware.FirmwareWriter 0 firmware-size
+  led-indicator := gpio.Pin ON-BOARD-LED-PIN --output
     
   server.listen server-socket:: | request/http.RequestIncoming response-writer/http.ResponseWriter |
     web-socket := server.web-socket request response-writer
@@ -119,6 +138,7 @@ install-firmware reader/io.Reader -> none:
     try:    
         last := null
         while data := reader.read:
+          led-indicator.set 1
           written-size += data.size
           writer.write data
           percent := (written-size * 100) / firmware-size
@@ -126,6 +146,7 @@ install-firmware reader/io.Reader -> none:
             print "[ATHENA] INFO: Installing firmware with $firmware-size bytes ($percent%)"
             clients.do: it.send "$percent"
             last = percent
+            led-indicator.set 0
 
         writer.commit
         clients.remove web-socket
@@ -133,6 +154,7 @@ install-firmware reader/io.Reader -> none:
     finally:
       writer.close
       web-socket.close
+      led-indicator.close
 
       // Wait a bit for web-socket to close
       sleep --ms=2500
